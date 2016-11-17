@@ -9,11 +9,19 @@ calc(N, Schedulers) ->
      || _ <- lists:seq(1,Schedulers - 1)],
     
     worker(round(N/Schedulers) + N rem Schedulers, Pid),
-    
-    (lists:sum([receive
-	 Count -> Count
-     end
-     || _ <- lists:seq(1,Schedulers)])/N)*4.
+    receiveLoop(Schedulers, 0, N).
+%    (lists:sum([receive
+%	 Count -> Count
+%     end
+%     || _ <- lists:seq(1,Schedulers)])/N)*4.
+
+receiveLoop(0, Sum, N) ->
+    (Sum/N)*4;
+receiveLoop(Schedulers, Sum, N) ->
+    receive
+	 Count -> receiveLoop(Schedulers - 1, Sum + Count, N)
+     end.
+
 
 worker(Points, Pid) ->
     Pid ! length([X || X <- lists:seq(1,Points), inUnitCircle(random:uniform(),random:uniform())]).
