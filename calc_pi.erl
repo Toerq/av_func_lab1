@@ -23,8 +23,20 @@ receiveLoop(Schedulers, Sum, N) ->
      end.
 
 
+%worker(Points, Pid) ->
+ %   Pid ! length([X || X <- lists:seq(1,Points), inUnitCircle(rand:uniform(),rand:uniform())]).
+
 worker(Points, Pid) ->
-    Pid ! length([X || X <- lists:seq(1,Points), inUnitCircle(rand:uniform(),rand:uniform())]).
+    worker(Points, Pid, 0).
+worker(0, Pid, Sum) ->
+    Pid ! Sum;
+worker(Points, Pid, Sum) ->
+    case inUnitCircle(random:uniform(),random:uniform()) of
+	true ->
+	    worker(Points - 1, Pid, Sum + 1);
+	false ->
+	    worker(Points - 1, Pid, Sum)
+    end.
 
 inUnitCircle(X,Y) ->
     (math:pow((X),2) + math:pow((Y),2)) < 1.
