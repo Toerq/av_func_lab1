@@ -9,25 +9,19 @@ calc(N, Schedulers) ->
      || _ <- lists:seq(1,Schedulers - 1)],
     
     worker(round(N/Schedulers) + N rem Schedulers, Pid),
-    receiveLoop(Schedulers, 0, N).
-%    (lists:sum([receive
-%	 Count -> Count
-%     end
-%     || _ <- lists:seq(1,Schedulers)])/N)*4.
+    receiveLoop(Schedulers, N).
 
-receiveLoop(0, Sum, N) ->
+receiveLoop(Schedulers, N) ->
+    receiveLoop(Schedulers, 0, N, 0).
+receiveLoop(0, Sum, N, _) ->
     (Sum/N)*4;
-receiveLoop(Schedulers, Sum, N) ->
+receiveLoop(Schedulers, Sum, N, Pred) ->
     receive
-	{success, NewSum} -> receiveLoop(Schedulers - 1, Sum + NewSum, N);
+	{success, NewSum} -> receiveLoop(Schedulers - 1, Sum + NewSum, N, NewSum);
 	Error ->
 	    io:format("Unknown error: ~w~n", [Error]),
-	    receiveLoop(Schedulers - 1, Sum, N)
+	    receiveLoop(Schedulers - 1, Sum + Pred, N, Pred)
      end.
-
-
-%worker(Points, Pid) ->
- %   Pid ! length([X || X <- lists:seq(1,Points), inUnitCircle(rand:uniform(),rand:uniform())]).
 
 worker(Points, Pid) ->
     worker(Points, Pid, 0).
@@ -43,23 +37,3 @@ worker(Points, Pid, Sum) ->
 
 inUnitCircle() ->
     (math:pow((rand:uniform()),2) + math:pow((rand:uniform()),2)) < 1.
-    
-    
-
-%{"init terminating in do_boot",
-%{badarith,
-%[{calc_pi,receiveLoop,3,
-%[{file,"calc_pi.erl"},
-%{line,22}]},
-%{timer,tc,3,[{file,"timer.erl"},
-%{line,197}]},
-%{calc_pi_grader,'-calc_sample_grader/0-lc$^0/1-0-',1,[{file,"calc_pi_grader.erl"},
-%{line,31}]},
-%{calc_pi_grader,'-calc_sample_grader/0-lc$^0/1-0-',1,[{file,"calc_pi_grader.erl"},
-%{line,34}]},
-%{calc_pi_grader,calc_sample_grader,0,[{file,"calc_pi_grader.erl"},
-%{line,28}]},
-%{init,start_em,1,[]},
-%{init,do_boot,3,[]}]}}
-    
-    
