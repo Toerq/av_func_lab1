@@ -34,15 +34,15 @@ worker(Points, Pid) ->
 worker(0, Pid, Sum) ->
     Pid ! {success, Sum};
 worker(Points, Pid, Sum) ->
-    case inUnitCircle(rand:uniform(),rand:uniform()) of
+    case inUnitCircle() of
 	true ->
 	    worker(Points - 1, Pid, Sum + 1);
 	false ->
 	    worker(Points - 1, Pid, Sum)
     end.
 
-inUnitCircle(X,Y) ->
-    (math:pow((X),2) + math:pow((Y),2)) < 1.
+inUnitCircle() ->
+    (math:pow((rand:uniform()),2) + math:pow((rand:uniform()),2)) < 1.
     
     
 
