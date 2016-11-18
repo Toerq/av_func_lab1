@@ -17,7 +17,8 @@ receiveLoop(0, Sum, N, _) ->
     (Sum/N)*4;
 receiveLoop(Schedulers, Sum, N, Pred) ->
     receive
-	{success, NewSum} -> receiveLoop(Schedulers - 1, Sum + NewSum, N, NewSum);
+	{success, NewSum} -> 
+	    receiveLoop(Schedulers - 1, Sum + NewSum, N, NewSum);
 	Error ->
 	    io:format("Unknown error: ~w~n", [Error]),
 	    receiveLoop(Schedulers - 1, Sum + Pred, N, Pred)
