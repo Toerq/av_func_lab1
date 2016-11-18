@@ -19,7 +19,10 @@ receiveLoop(0, Sum, N) ->
     (Sum/N)*4;
 receiveLoop(Schedulers, Sum, N) ->
     receive
-	 Count -> receiveLoop(Schedulers - 1, Sum + Count, N)
+	{success, NewSum} -> receiveLoop(Schedulers - 1, Sum + NewSum, N);
+	Error ->
+	    io:format("Unknown error: ~w~n", [Error]),
+	    receiveLoop(Schedulers - 1, Sum, N)
      end.
 
 
@@ -29,7 +32,7 @@ receiveLoop(Schedulers, Sum, N) ->
 worker(Points, Pid) ->
     worker(Points, Pid, 0).
 worker(0, Pid, Sum) ->
-    Pid ! Sum;
+    Pid ! {success, Sum};
 worker(Points, Pid, Sum) ->
     case inUnitCircle(random:uniform(),random:uniform()) of
 	true ->
@@ -43,5 +46,20 @@ inUnitCircle(X,Y) ->
     
     
 
+%{"init terminating in do_boot",
+%{badarith,
+%[{calc_pi,receiveLoop,3,
+%[{file,"calc_pi.erl"},
+%{line,22}]},
+%{timer,tc,3,[{file,"timer.erl"},
+%{line,197}]},
+%{calc_pi_grader,'-calc_sample_grader/0-lc$^0/1-0-',1,[{file,"calc_pi_grader.erl"},
+%{line,31}]},
+%{calc_pi_grader,'-calc_sample_grader/0-lc$^0/1-0-',1,[{file,"calc_pi_grader.erl"},
+%{line,34}]},
+%{calc_pi_grader,calc_sample_grader,0,[{file,"calc_pi_grader.erl"},
+%{line,28}]},
+%{init,start_em,1,[]},
+%{init,do_boot,3,[]}]}}
     
     
