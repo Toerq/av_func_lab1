@@ -34,7 +34,7 @@ worker(Points, Pid) ->
 worker(0, Pid, Sum) ->
     Pid ! {success, Sum};
 worker(Points, Pid, Sum) ->
-    case inUnitCircle(random:uniform(),random:uniform()) of
+    case inUnitCircle(rand:uniform(),rand:uniform()) of
 	true ->
 	    worker(Points - 1, Pid, Sum + 1);
 	false ->
