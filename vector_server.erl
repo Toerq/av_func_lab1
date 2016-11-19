@@ -144,7 +144,7 @@ eval(X) ->
     try eval(X, 100) of
 	Res -> Res
     catch
-	Throw -> Throw
+	_ -> error
     end.
 
 eval(_, 0) ->
