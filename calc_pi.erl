@@ -9,6 +9,9 @@ calc(N, Schedulers) ->
 		end)
      || _ <- lists:seq(1,Schedulers - 1)],
   
+%    spawn_link(fun() -> 
+%		       worker(round(N/Schedulers) + N rem Schedulers, Pid, Ref)
+%	       end),
     worker(round(N/Schedulers) + N rem Schedulers, Pid, Ref),
     receiveLoop(Schedulers, N, Ref).
 
@@ -16,17 +19,17 @@ receiveLoop(Schedulers, N, Ref) ->
     receiveLoop(Schedulers, 0, N, 0, Ref).
 receiveLoop(0, Sum, N, _, _) ->
     (Sum/N)*4;
-receiveLoop(Schedulers, Sum, N, Pred, Ref) ->
+receiveLoop(Schedulers, Sum, N, PrevValue, Ref) ->
     receive
 	{success, Ref, NewSum} -> 
 	    receiveLoop(Schedulers - 1, Sum + NewSum, N, NewSum, Ref);
 	Error ->
 	    io:format("Unknown error: ~w~n", [Error]),
-	    receiveLoop(Schedulers - 1, Sum + Pred, N, Pred, Ref)
+	    receiveLoop(Schedulers - 1, Sum + PrevValue, N, PrevValue, Ref)
      end.
 
 worker(Points, Pid, Ref) ->
-    worker(Points, Pid, Ref, 0).
+    worker(Points, Pid, 0, Ref).
 worker(0, Pid, Sum, Ref) ->
     Pid ! {success, Ref, Sum};
 worker(Points, Pid, Sum, Ref) ->

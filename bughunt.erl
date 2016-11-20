@@ -1,6 +1,6 @@
 -module(bughunt).
 -compile([export_all]).
--export([test/1, test_all/0]).
+-export([test/1, test_all/0, test_I/2, test_all_quick/0]).
 -include_lib("/home/chto2175/proper/include/proper.hrl").
 -include_lib("/home/chto2175/eunit/include/eunit.hrl").
 
@@ -15,16 +15,20 @@ prop_dot(Fun) ->
 	    Fun({'dot', L1, L2}) =:= eval_({'dot', L1, L2})).
 prop_mul(Fun) ->
     ?FORALL({L1, L2}, {list(integer()), list(integer())},
-	    Fun({'div', {'norm_one', L1}, L2}) =:= eval_({'div', {'norm_one', L1}, L2})).
+	    (Fun({'div', {'norm_one', L1}, L2})) =:= 
+		(eval_({'div', {'norm_one', L1}, L2}))).
 prop_div(Fun) ->
     ?FORALL({L1, L2}, {list(integer()), list(integer())},
-	    Fun({'mul', {'norm_one', L1}, L2}) =:= eval_({'mul', {'norm_one', L1}, L2})).
+	    (Fun({'mul', {'norm_one', L1}, L2})) =:= 
+		(eval_({'mul', {'norm_one', L1}, L2}))).
 prop_mul2(Fun) ->
     ?FORALL({L1, L2}, {list(integer()), list(integer())},
-	    Fun({'div', {'norm_inf', L1}, L2}) =:= eval_({'div', {'norm_inf', L1}, L2})).
+	    (Fun({'div', {'norm_inf', L1}, L2})) =:= 
+		(eval_({'div', {'norm_inf', L1}, L2}))).
 prop_div2(Fun) ->
     ?FORALL({L1, L2}, {list(integer()), list(integer())},
-	    Fun({'mul', {'norm_inf', L1}, L2}) =:= eval_({'mul', {'norm_inf', L1}, L2})).
+	    (Fun({'mul', {'norm_inf', L1}, L2})) =:= 
+		(eval_({'mul', {'norm_inf', L1}, L2}))).
 
 test_all() ->
     test_all(1, []).
@@ -44,51 +48,125 @@ test_all(N, L) ->
 	    test_all(N+1,  [{Broken}] ++ L)
     end.
 
+test_all_quick() ->
+    test_all_quick(1, []).
+
+test_all_quick(51, L) ->
+    io:format("Not working: ~n"),
+    io:format("~w, ", [length(L)]);
+
+test_all_quick(N, L) ->
+    io:format("--- Function ~w ---~n", [N]),
+    case test_quick(N) of
+	correct ->
+	    io:format("Working!~n"),
+	    test_all_quick(N+1, L);
+	Broken ->
+	    io:format("Broken!~n"),
+	    test_all_quick(N+1,  [{Broken}] ++ L)
+    end.
+
+
+test_I(I, Input) ->
+    Fun = vectors:vector(I),
+    Ans1 = Fun(Input),
+    Ans2 = eval_(Input),
+    io:format("fun: ~w, eval: ~w~n",[Ans1,Ans2]).
+
 test(I) ->
     Fun = vectors:vector(I),
     case proper:counterexample(prop_add(Fun),[quiet, noshrink]) of 
 	true -> L1 = [];
 	[{I11, I12}] ->
-	    L1 = {{'add', {I11, I12}}, Fun({'add', I11, I12}), eval_({'add', I11, I12}), "The operation add is not supported"}
+	    L1 = {{'add', {I11, I12}}, Fun({'add', I11, I12}), eval_({'add', I11, I12}), "The operation 'add' is not supported"}
     end,
     case proper:counterexample(prop_sub(Fun),[quiet, noshrink]) of 
 	true -> L2 = [];
 	[{I21, I22}] ->
-	    L2 = {{'sub', {I21, I22}}, Fun({'sub', I21, I22}),  eval_({'sub', I21, I22}), "The operation sub is not supported"}
+	    L2 = {{'sub', {I21, I22}}, Fun({'sub', I21, I22}),  eval_({'sub', I21, I22}), "The operation 'sub' is not supported"}
     end,
     case proper:counterexample(prop_dot(Fun),[quiet, noshrink]) of 
 	true -> L3 = [];
 	[{I31, I32}] ->
-	    L3 = {{'dot', {I31, I32}}, Fun({'dot', I31, I32}), eval_({'dot', I31, I32}), "The operation dot is not supported"}
+	    L3 = {{'dot', {I31, I32}}, Fun({'dot', I31, I32}), eval_({'dot', I31, I32}), "The operation 'dot' is not supported"}
     end,
     case proper:counterexample(prop_div(Fun),[quiet, noshrink]) of 
 	true -> L4 = [];
 	[{I41, I42}] ->
-	    L4 = {{'div', {'norm_one',I41}, I42}, Fun({'div', {'norm_one', I41}, I42}), eval_({'div', {'norm_one', I41}, I42}), "The operation div with norm_one is not supported"}
+	    L4 = {{'div', {'norm_one',I41}, I42}, Fun({'div', {'norm_one', I41}, I42}), eval_({'div', {'norm_one', I41}, I42}), "The operation 'div' is not supported"}
     end,
     case proper:counterexample(prop_mul(Fun),[quiet, noshrink]) of 
 	true -> L5 = [];
 	[{I51, I52}] -> 
-	    L5 = {{'mul', {'norm_one',I51}, I52},  Fun({'mul', {'norm_one', I51}, I52}),  eval_({'mul', {'norm_one', I51}, I52}), "The operation mul with norm_one is not supported"}
+	    L5 = {{'mul', {'norm_one',I51}, I52}, Fun({'mul', {'norm_one', I51}, I52}), eval_({'mul', {'norm_one', I51}, I52}), "The operation 'mul' is not supported"}
     end,
     case proper:counterexample(prop_div2(Fun),[quiet, noshrink]) of 
 	true -> L6 = [];
 	[{I61, I62}] ->
-	    L6 = {{'div', {'norm_inf',I61}, I62},  Fun({'div', {'norm_inf', I61}, I62}),  eval_({'div', {'norm_inf', I61}, I62}), "The operation div with norm_inf is not supported"}
+	    L6 = {{'div', {'norm_inf',I61}, I62},  Fun({'div', {'norm_inf', I61}, I62}),  eval_({'div', {'norm_inf', I61}, I62}), "The operation 'div' is not supported"}
     end,
     case proper:counterexample(prop_mul2(Fun),[quiet, noshrink]) of 
 	true ->
 	    L7 = [];
 	[{I71, I72}] -> 	
-	    L7 = {{'mul', {'norm_inf',I71}, I72}, Fun({'mul', {'norm_inf', I71}, I72}),  eval_({'mul', {'norm_inf', I71}, I72}), "The operation mul with norm_inf is not supported"}
+	    L7 = {{'mul', {'norm_inf',I71}, I72}, Fun({'mul', {'norm_inf', I71}, I72}),  eval_({'mul', {'norm_inf', I71}, I72}), "The operation 'mul' is not supported"}
     end,
 
     TempReturn = [L1] ++ [L2] ++ [L3] ++ [L4] ++ [L5] ++ [L6] ++ [L7],
     Return = [X || X <- TempReturn, X /= []],
     case length(Return) > 1 of
-	true -> Return;
+	true -> lists:nth(1, Return);
 	false -> correct
     end.
+
+test_quick(I) ->
+    Fun = vectors:vector(I),
+    io:format("add:~n"),
+    case proper:quickcheck(prop_add(Fun),[ noshrink]) of 
+	Q1 ->
+	    L1 = Q1
+    end,
+    io:format("sub:~n"),
+    case proper:quickcheck(prop_sub(Fun),[ noshrink]) of 
+	Q2 ->
+	    L2 = Q2
+    end,
+    io:format("dot:~n"),
+    case proper:quickcheck(prop_dot(Fun),[ noshrink]) of 
+	Q3 ->
+	    L3 = Q3
+    end,
+    io:format("div:~n"),
+    case proper:quickcheck(prop_div(Fun),[ noshrink]) of 
+	Q4 ->
+	    L4 = Q4
+    end,
+    io:format("mul:~n"),
+    case proper:quickcheck(prop_mul(Fun),[ noshrink]) of 
+	Q5 -> 
+	    L5 = Q5
+    end,
+    io:format("div2:~n"),
+    case proper:quickcheck(prop_div2(Fun),[ noshrink]) of 
+	Q6 ->
+	    L6 = Q6
+    end,
+    io:format("mul2:~n"),
+    case proper:quickcheck(prop_mul2(Fun),[ noshrink]) of 
+	Q7 ->
+	    L7 = Q7
+    end,
+    
+    TempReturn = [L1] ++ [L2] ++ [L3] ++ [L4] ++ [L5] ++ [L6] ++ [L7],
+    Return = [X || X <- TempReturn, X == false],
+    io:format("~w~n", [Return]),
+
+    case length(Return) > 1 of
+	true -> lists:nth(1, Return);
+	false -> correct
+    end.
+
+
 
 eval_(X) ->
     try eval_(X, 100) of

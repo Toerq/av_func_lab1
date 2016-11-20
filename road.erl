@@ -1,6 +1,5 @@
 -module(road).
 -export([days/3]).
--compile([export_all]).
 
 -include_lib("/home/chto2175/proper/include/proper.hrl").
 -include_lib("/home/chto2175/eunit/include/eunit.hrl").

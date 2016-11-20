@@ -22,7 +22,7 @@ stop/0
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,terminate/2, code_change/3]).
 
 -define(SERVER, ?MODULE).
--define(DEFAULT_PORT, 1056).
+-define(DEFAULT_PORT, 1055).
 
 -record(state, {port, lsock, request_count = 0}).
 
@@ -37,7 +37,6 @@ stop/0
 %% Pid = pid()
 %% @end
 %%--------------------------------------------------------------------
-
 
 start_link(Port) ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [Port], []).
@@ -125,8 +124,6 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 do_rpc(Socket, RawData) ->
     try
-	M = ?SERVER,
-	F = compute,
 	[A] = args_to_terms(RawData),
 	Result = apply(?SERVER, eval, [A]),
 	gen_tcp:send(Socket, io_lib:fwrite("Res: ~w~n", [Result]))
