@@ -26,11 +26,11 @@ unconstructed(Overlap, [U|Unconstructed], NewSegments) ->
     NewSegment = overlap(U, Overlap),
     case NewSegment of
 	[] -> 
-	    unconstructed(Overlap, Unconstructed,  NewSegments ++ [U]);
+	    unconstructed(Overlap, Unconstructed,  [U] ++ NewSegments);
 	covered ->
 	    unconstructed(Overlap, Unconstructed, NewSegments);
 	NewSegment ->
-	    unconstructed(Overlap, Unconstructed, NewSegments ++ NewSegment)
+	    unconstructed(Overlap, Unconstructed, NewSegment ++ NewSegments)
     end.
 
 maxLength([], MaxLength) ->
@@ -50,7 +50,7 @@ overlap({Start, End}, {StartOverlap, EndOverlap}) ->
 	false ->
 	    Return1 = []
     end,
-    case (StartOverlap >= Start) and (Start =< EndOverlap) and (Start =< EndOverlap) and (EndOverlap =< End)  of
+    case (StartOverlap > Start) and (Start < EndOverlap) and (Start < EndOverlap) and (EndOverlap < End)  of
 	true ->
 	    Return2 = [{Start, StartOverlap}, {EndOverlap, End}];
 	false ->
@@ -79,7 +79,7 @@ overlap({Start, End}, {StartOverlap, EndOverlap}) ->
 ascendingTuples([]) ->
     true;
 ascendingTuples([{V1,V2}|T]) ->
-    case V2 >= V1 of
+    case V2 > V1 of
 	true ->
 	    ascendingTuples(T);
 	false ->
@@ -101,22 +101,21 @@ segmentCount([], _, Count) ->
 segmentCount([T|Ts], X, Count) ->
     case overlap(T, X) of
 	[] ->
-	    segmentCount([T|Ts], X, Count + 1);
+	    segmentCount(Ts, X, Count + 1);
 	covered ->
-	    segmentCount([T|Ts], X, Count);
+	    segmentCount(Ts, X, Count);
 	[_,_] ->
-	    segmentCount([T|Ts], X, Count + 2);
+	    segmentCount(Ts, X, Count + 2);
 	[_] ->
-	    segmentCount([T|Ts], X, Count + 1);
+	    segmentCount(Ts, X, Count + 1);
 	Any ->
 	    io:format("Error: ~w~n", [Any])
     end.
 
-
 prop_overlap() ->
     ?FORALL({L,T}, {list(tuple([integer(),integer()])), tuple([integer(),integer()])},
-	    ?IMPLIES(ascendingTuples(L) and ascendingTuples([T]), 
-		     length(unconstructed(T, L, []) == segmentCount(L,T,0)))).
+	    ?IMPLIES(ascendingTuples(L) and ascendingTuples([T]) and (length(L) > 0), 
+		     length(unconstructed(T, L, [])) == segmentCount(L,T,0))).
 
 prop_newListSize() ->
     ?FORALL({L,T}, {list(tuple([integer(),integer()])), tuple([integer(),integer()])},
@@ -125,7 +124,7 @@ prop_newListSize() ->
 
 
 overlap_test_() ->
-    [test_zero(), test_one(), test_two(), test_three(), test_four(), test_five(), test_six(), test_seven(), test_eight(), test_nine()].
+    [test_zero(), test_one(), test_two(), test_three(), test_four(), test_five(), test_six(), test_seven(), test_eight(), test_nine(), test_ten()].
 
 test_zero() ->    
     ?_assertEqual([], overlap({10,20}, {0,5})).
@@ -144,7 +143,7 @@ test_six() ->
     ?_assertEqual(15, maxLength([{0,5}, {5,20}, {30,31}], 0)).
 
 test_seven() ->
-    ?_assertEqual([{1,5}, {20,30}], unconstructed({5,20}, [{1,10}, {20,30}], [])).
+    ?_assertEqual([{20,30},{1,5}], unconstructed({5,20}, [{1,10}, {20,30}], [])).
 
 test_eight() ->
     ?_assertEqual(2, days(30, [{1,5},{11,27},{2,14},{18,28}],6)).
@@ -152,3 +151,5 @@ test_eight() ->
 test_nine() ->
     ?_assertEqual(-1, days(30, [{1,5},{11,27},{2,14},{18,28}],1)). 
 
+test_ten() ->
+    ?_assertEqual([{-1,0}], overlap({-10,0}, {-10,-1})).
