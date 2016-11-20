@@ -38,4 +38,4 @@ worker(Points, Pid, Sum, Ref) ->
     end.
 
 inUnitCircle() ->
-    (math:pow((random:uniform()),2) + math:pow((random:uniform()),2)) < 1.
+    (math:pow((rand:uniform()),2) + math:pow((rand:uniform()),2)) < 1.

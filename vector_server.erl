@@ -222,5 +222,5 @@ norm_one(X) ->
     lists:sum([abs(Y) || Y <- X]).
 
 norm_inf(X) ->
-    lists:max(X).
+    lists:max([abs(Y) || Y <- X]).
     
